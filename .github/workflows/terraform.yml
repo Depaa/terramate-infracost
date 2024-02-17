@@ -22,14 +22,14 @@ jobs:
     - name: Install tools using asdf
       uses: asdf-vm/actions/install@v2.2.0
 
-    - name: List changed stacks
-      id: list
-      run: |
-        echo "stdout<<STDOUT" >>$GITHUB_OUTPUT
-        terramate list --changed >>$GITHUB_OUTPUT
-        EXIT_CODE=$?
-        echo "STDOUT" >>$GITHUB_OUTPUT
-        exit ${EXIT_CODE}
+    # - name: List changed stacks
+    #   id: list
+    #   run: |
+    #     echo "stdout<<STDOUT" >>$GITHUB_OUTPUT
+    #     terramate list --changed >>$GITHUB_OUTPUT
+    #     EXIT_CODE=$?
+    #     echo "STDOUT" >>$GITHUB_OUTPUT
+    #     exit ${EXIT_CODE}
 
     - name: Configure AWS Credentials
       if: steps.list.outputs.stdout

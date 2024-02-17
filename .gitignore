@@ -5,3 +5,4 @@ terraform.tfstate
 .infracost
 plan.json
 tfplan.binary
+images/

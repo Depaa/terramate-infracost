@@ -84,6 +84,8 @@ jobs:
       with:
         api-key: ${{ secrets.INFRACOST_API_KEY }}
 
-        
     - name: Generate Infracost cost estimate baseline
       run: infracost breakdown --path .
+
+    # - name: Generate Infracost cost estimate baseline
+    #   run: infracost breakdown --path .

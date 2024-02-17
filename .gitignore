@@ -3,3 +3,4 @@
 terraform.tfstate
 
 .infracost
+plan.json

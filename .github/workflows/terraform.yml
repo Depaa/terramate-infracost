@@ -22,15 +22,6 @@ jobs:
     - name: Install tools using asdf
       uses: asdf-vm/actions/install@v2.2.0
 
-    # - name: List changed stacks
-    #   id: list
-    #   run: |
-    #     echo "stdout<<STDOUT" >>$GITHUB_OUTPUT
-    #     terramate list --changed >>$GITHUB_OUTPUT
-    #     EXIT_CODE=$?
-    #     echo "STDOUT" >>$GITHUB_OUTPUT
-    #     exit ${EXIT_CODE}
-
     - name: Configure AWS Credentials
       if: steps.list.outputs.stdout
       uses: aws-actions/configure-aws-credentials@v2
@@ -84,8 +75,20 @@ jobs:
       with:
         api-key: ${{ secrets.INFRACOST_API_KEY }}
 
+      # Generate Infracost JSON file as the baseline.
     - name: Generate Infracost cost estimate baseline
-      run: infracost breakdown --path .
-
-    # - name: Generate Infracost cost estimate baseline
-    #   run: infracost breakdown --path .
+      run: |
+        terramate run infracost breakdown \
+          --path . \
+          --format=json \
+          --usage-file infracost-usage-medium.yml \
+          --out-file=/tmp/infracost-base.json
+    
+    - name: Post Infracost comment
+      run: |
+        terramate run infracost comment github \
+          --path=/tmp/infracost.json \
+          --repo=$GITHUB_REPOSITORY \
+          --github-token=${{github.token}} \
+          --pull-request=${{github.event.pull_request.number}} \
+          --behavior=update

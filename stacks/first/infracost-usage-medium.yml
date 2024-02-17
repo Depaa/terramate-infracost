@@ -1,0 +1,6 @@
+version: 0.1
+resource_type_default_usage:
+  aws_s3_bucket:
+    standard: # Usages of S3 Standard:
+      storage_gb: 1000 # Total storage in GB.
+      monthly_tier_1_requests: 10000 # Monthly PUT, COPY, POST, LIST requests (Tier 1).

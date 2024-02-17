@@ -1,8 +1,8 @@
 version: 0.1
 resource_type_default_usage:
   aws_sns_topic:
-    monthly_requests: 1000 # Monthly requests to SNS.
-    email_subscriptions: 100 # Number of Email/Email-JSON subscriptions
+    monthly_requests: 10000 # Monthly requests to SNS.
+    email_subscriptions: 1000 # Number of Email/Email-JSON subscriptions
 
   aws_dynamodb_table:
     storage_gb: 100

@@ -78,17 +78,17 @@ jobs:
     # Generate Infracost JSON file as the baseline.
     - name: Generate Infracost cost estimate baseline
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run infracost breakdown \
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost breakdown \
           --path . \
           --format=json \
           --usage-file infracost-usage-medium.yml \
-          --out-file=infracost-base.json
-        cat infracost-base.json
+          '--out-file=${terramate.stack.path.absolute}/infracost-base.json'
+        terramate run --eval -- cat '${terramate.stack.path.absolute}/infracost-base.json'
     
     - name: Post Infracost comment
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run infracost comment github \
-          --path=infracost-base.json \
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost comment github \
+          '--path='${terramate.stack.path.absolute}/infracost-base.json' \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \
           --pull-request=${{github.event.pull_request.number}} \

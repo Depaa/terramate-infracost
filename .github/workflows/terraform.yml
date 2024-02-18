@@ -82,7 +82,7 @@ jobs:
           --path . \
           --format=json \
           --usage-file infracost-usage-medium.yml \
-          --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json \
+          --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat $(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
     
     - name: Post Infracost comment

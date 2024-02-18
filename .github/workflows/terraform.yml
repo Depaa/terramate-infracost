@@ -83,12 +83,11 @@ jobs:
           --format=json \
           --usage-file infracost-usage-medium.yml \
           --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
-        terramate run --disable-check-git-remote --eval -- cat $(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
     
     - name: Post Infracost comment
       run: |
         terramate run --disable-check-git-remote --eval -- infracost comment github \
-          '--path=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json \
+          --path=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \
           --pull-request=${{github.event.pull_request.number}} \

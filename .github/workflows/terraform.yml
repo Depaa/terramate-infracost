@@ -83,6 +83,7 @@ jobs:
           --format=json \
           --usage-file infracost-usage-medium.yml \
           --out-file=$(pwd)/infracost-base.json
+        cat $(pwd)/infracost-base.json
     
     - name: Post Infracost comment
       run: |

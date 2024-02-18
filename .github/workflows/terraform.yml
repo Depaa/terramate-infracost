@@ -82,7 +82,7 @@ jobs:
           --path . \
           --format=json \
           --usage-file infracost-usage-medium.yml \
-          '--out-file=${terramate.stack.path.absolute}/infracost-base.json'
+          '--out-file=$(pwd)/${terramate.stack.path.absolute}/infracost-base.json'
         terramate run --eval -- cat '$(pwd)/${terramate.stack.path.absolute}/infracost-base.json'
     
     - name: Post Infracost comment

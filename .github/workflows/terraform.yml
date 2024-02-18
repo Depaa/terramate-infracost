@@ -84,11 +84,11 @@ jobs:
           --usage-file infracost-usage-medium.yml \
           --out-file=$(pwd)/infracost-base.json
     
-    # - name: Post Infracost comment
-    #   run: |
-    #     terramate run infracost comment github \
-    #       --path=/tmp/infracost-base.json \
-    #       --repo=$GITHUB_REPOSITORY \
-    #       --github-token=${{github.token}} \
-    #       --pull-request=${{github.event.pull_request.number}} \
-    #       --behavior=update
+    - name: Post Infracost comment
+      run: |
+        terramate run infracost comment github \
+          --path=infracost-base.json \
+          --repo=$GITHUB_REPOSITORY \
+          --github-token=${{github.token}} \
+          --pull-request=${{github.event.pull_request.number}} \
+          --behavior=update

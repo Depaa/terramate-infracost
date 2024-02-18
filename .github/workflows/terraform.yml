@@ -82,13 +82,13 @@ jobs:
           --path . \
           --format=json \
           --usage-file infracost-usage-medium.yml \
-          --out-file=$(pwd)/infracost-base.json
-        cat $(pwd)/infracost-base.json
+          --out-file=infracost-base.json
+        cat infracost-base.json
     
     - name: Post Infracost comment
       run: |
         TM_DISABLE_SAFEGUARDS=git terramate run infracost comment github \
-          --path=$(pwd)/infracost-base.json \
+          --path=infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \
           --pull-request=${{github.event.pull_request.number}} \

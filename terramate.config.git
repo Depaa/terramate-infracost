@@ -1,0 +1,10 @@
+terramate {
+  config {
+    git {
+      # Git configuration
+      default_remote = "origin"
+      default_branch = "main"
+    }
+    disable_safeguards = ["git-untracked", "git-uncommitted"]
+  }
+}

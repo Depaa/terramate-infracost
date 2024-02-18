@@ -86,7 +86,7 @@ jobs:
     
     - name: Post Infracost comment
       run: |
-        terramate run infracost comment github \
+        TM_DISABLE_SAFEGUARDS=git terramate run infracost comment github \
           --path=infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \

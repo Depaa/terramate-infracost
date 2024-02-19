@@ -33,39 +33,10 @@ jobs:
     - name: Create Terraform plan on changed stacks
       if: steps.list.outputs.stdout
       run: |
-        terramate run --changed -- terraform init
-        terramate run --changed -- terraform validate
-        terramate run --changed -- terraform plan -out out.tfplan
-
-    - name: Generate Preview Comment
-      if: steps.list.outputs.stdout
-      id: comment
-      run: |
-        echo >>pr-comment.txt "### List of Changed Stacks"
-        echo >>pr-comment.txt
-        echo >>pr-comment.txt '```bash'
-        echo >>pr-comment.txt "${{ steps.list.outputs.stdout }}"
-        echo >>pr-comment.txt '```'
-        echo >>pr-comment.txt
-        echo >>pr-comment.txt "#### Terraform Plan"
-        echo >>pr-comment.txt
-        echo >>pr-comment.txt '```terraform'
-        terramate run --changed -- terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >>pr-comment.txt
-        echo >>pr-comment.txt '```'
-        cat pr-comment.txt >>$GITHUB_STEP_SUMMARY
-
-    - name: Inform about no Changed Stacks
-      if: (!steps.list.outputs.stdout)
-      run: |
-        echo >>pr-comment.txt '### No changed stacks.'
-        cat pr-comment.txt >>$GITHUB_STEP_SUMMARY
-
-    - name: Publish Plans for Changed Stacks
-      uses: marocchino/sticky-pull-request-comment@v2
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        header: terraform-plan
-        path: pr-comment.txt
+        terramate run -- terraform init
+        terramate run -- terraform validate
+        terramate run --eval -- terraform plan -out $(pwd)'${terramate.stack.path.absolute}'/tfplan.binary
+        terramate run --eval -- terraform show -json $(pwd)'${terramate.stack.path.absolute}'/tfplan.binary > plan.json
 
 
     - name: Setup Infracost
@@ -79,7 +50,7 @@ jobs:
     - name: Generate Infracost cost estimate baseline
       run: |
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost breakdown \
-          --path . \
+          --path $(pwd)'${terramate.stack.path.absolute}'/plan.json \
           --format=json \
           --usage-file infracost-usage-medium.yml \
           --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json

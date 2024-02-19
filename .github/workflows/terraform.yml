@@ -33,8 +33,8 @@ jobs:
       run: |
         TM_DISABLE_SAFEGUARDS=git terramate run -- terraform init
         TM_DISABLE_SAFEGUARDS=git terramate run -- terraform validate
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -chdir=$(pwd)'${terramate.stack.path.absolute}'/ -out tfplan.binary
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform show -chdir=$(pwd)'${terramate.stack.path.absolute}'/ -json tfplan.binary > plan.json
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -chdir='${terramate.stack.path.absolute}'/ -out tfplan.binary
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform show -chdir='${terramate.stack.path.absolute}'/ -json tfplan.binary > plan.json
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat $(pwd)'${terramate.stack.path.absolute}'/plan.json
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat plan.json
 

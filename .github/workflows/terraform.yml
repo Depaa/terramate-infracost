@@ -10,9 +10,6 @@ jobs:
     name: Plan
     runs-on: ubuntu-latest
 
-    env: 
-      working-directory: $pwd
-
     permissions:
       id-token: write
       contents: write
@@ -33,14 +30,13 @@ jobs:
         aws-region: eu-central-1
         
     - name: Create Terraform plan on changed stacks
-      working-directory: ${{ env.working-directory }}
       run: |
         TM_DISABLE_SAFEGUARDS=git terramate run -- terraform init
         TM_DISABLE_SAFEGUARDS=git terramate run -- terraform validate
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -out '${terramate.stack.path.absolute}'/tfplan.binary
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform show -json '${terramate.stack.path.absolute}'/tfplan.binary > '${terramate.stack.path.absolute}'/plan.json
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -chdir=$(pwd)'${terramate.stack.path.absolute}'/ -out tfplan.binary
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform show -chdir=$(pwd)'${terramate.stack.path.absolute}'/ -json tfplan.binary > plan.json
+        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat $(pwd)'${terramate.stack.path.absolute}'/plan.json
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat plan.json
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat '${terramate.stack.path.absolute}'/plan.json
 
 
     - name: Setup Infracost

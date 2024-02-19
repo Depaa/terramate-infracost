@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env: 
-      working-directory: "$(pwd)"
+      working-directory: $pwd
 
     permissions:
       id-token: write

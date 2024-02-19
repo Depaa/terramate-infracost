@@ -22,7 +22,17 @@ jobs:
     - name: Install tools using asdf
       uses: asdf-vm/actions/install@v2.2.0
 
+    - name: List changed stacks
+      id: list
+      run: |
+        echo "stdout<<STDOUT" >>$GITHUB_OUTPUT
+        terramate list --changed >>$GITHUB_OUTPUT
+        EXIT_CODE=$?
+        echo "STDOUT" >>$GITHUB_OUTPUT
+        exit ${EXIT_CODE}
+
     - name: Configure AWS Credentials
+      if: steps.list.outputs.stdout
       uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -30,32 +40,71 @@ jobs:
         aws-region: eu-central-1
         
     - name: Create Terraform plan on changed stacks
+      if: steps.list.outputs.stdout
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run -- terraform init
-        TM_DISABLE_SAFEGUARDS=git terramate run -- terraform validate
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -out $(pwd)'${terramate.stack.path.absolute}'/plan.json
+        terramate run --changed -- terraform init
+        terramate run --changed -- terraform validate
+        terramate run --changed -- terraform plan -out out.tfplan
+
+    - name: Generate Preview Comment
+      if: steps.list.outputs.stdout
+      id: comment
+      run: |
+        echo >>pr-comment.txt "### List of Changed Stacks"
+        echo >>pr-comment.txt
+        echo >>pr-comment.txt '```bash'
+        echo >>pr-comment.txt "${{ steps.list.outputs.stdout }}"
+        echo >>pr-comment.txt '```'
+        echo >>pr-comment.txt
+        echo >>pr-comment.txt "#### Terraform Plan"
+        echo >>pr-comment.txt
+        echo >>pr-comment.txt '```terraform'
+        terramate run --changed -- terraform show -no-color out.tfplan 2>&1 | dd bs=1024 count=248 >>pr-comment.txt
+        echo >>pr-comment.txt '```'
+        cat pr-comment.txt >>$GITHUB_STEP_SUMMARY
+
+    - name: Inform about no Changed Stacks
+      if: (!steps.list.outputs.stdout)
+      run: |
+        echo >>pr-comment.txt '### No changed stacks.'
+        cat pr-comment.txt >>$GITHUB_STEP_SUMMARY
+
+    - name: Publish Plans for Changed Stacks
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        header: terraform-plan
+        path: pr-comment.txt
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
 
 
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
+      # See https://github.com/infracost/actions/tree/master/setup for other inputs
+      # If you can't use this action, see Docker images in https://infracost.io/cicd
       with:
         api-key: ${{ secrets.INFRACOST_API_KEY }}
+      run: infracost breakdown --path .
 
-    # Generate Infracost JSON file as the baseline.
-    - name: Generate Infracost cost estimate baseline
-      run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost breakdown \
-          --path $(pwd)'${terramate.stack.path.absolute}'/plan.json \
-          --format=json \
-          --usage-file infracost-usage-medium.yml \
-          --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat $(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
-    
-    - name: Post Infracost comment
-      run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost comment github \
-          --path=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json \
-          --repo=$GITHUB_REPOSITORY \
-          --github-token=${{github.token}} \
-          --pull-request=${{github.event.pull_request.number}} \
-          --behavior=new
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+      # On push to "main", build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false

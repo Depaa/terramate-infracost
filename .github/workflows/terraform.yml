@@ -31,8 +31,8 @@ jobs:
         
     - name: Create Terraform plan on changed stacks
       run: |
-        terramate run -- terraform init
-        terramate run -- terraform validate
+        TM_DISABLE_SAFEGUARDS=git terramate run -- terraform init
+        TM_DISABLE_SAFEGUARDS=git terramate run -- terraform validate
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -out $(pwd)'${terramate.stack.path.absolute}'/tfplan.binary
         TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform show -json $(pwd)'${terramate.stack.path.absolute}'/tfplan.binary > plan.json
 

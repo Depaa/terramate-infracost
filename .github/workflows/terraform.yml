@@ -1,6 +1,8 @@
 name: Preview Terraform Plan
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
 
 jobs:
@@ -14,18 +16,11 @@ jobs:
       pull-requests: write
 
     steps:
-    - name: Checkout base branch
+    - name: Checkout
       uses: actions/checkout@v4
-      with:
-        ref: '${{ github.event.pull_request.base.ref }}'
 
     - name: Install tools using asdf
       uses: asdf-vm/actions/install@v2.2.0
-
-    - name: Setup Infracost
-      uses: infracost/actions/setup@v2
-      with:
-        api-key: ${{ secrets.INFRACOST_API_KEY }}
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -34,37 +29,32 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-central-1
 
+    - name: Setup Infracost
+      uses: infracost/actions/setup@v2
+      with:
+        api-key: ${{ secrets.INFRACOST_API_KEY }}
+        
+    - name: Create Terraform plan on changed stacks
+      run: |
+        TM_DISABLE_SAFEGUARDS=git terramate run terraform init
+        TM_DISABLE_SAFEGUARDS=git terramate run terraform validate
+        TM_DISABLE_SAFEGUARDS=git terramate run terraform plan -out ./out.tfplan
+        TM_DISABLE_SAFEGUARDS=git terramate run ls -latr
+
     # Generate Infracost JSON file as the baseline.
     - name: Generate Infracost cost estimate baseline
       run: |
-        terramate run infracost breakdown \
-          --path=./ \
-          --format=json \
-          --out-file=infracost-base.json
-        terramate run ls -latr
-        
-    - name: Checkout PR branch
-      uses: actions/checkout@v4
-        
-    # - name: Create Terraform plan on changed stacks
-    #   run: |
-    #     terramate run terraform init
-    #     terramate run terraform validate
-    #     terramate run terraform plan -out ./out.tfplan
-
-    - name: Generate Infracost diff
-      run: |
         TM_DISABLE_SAFEGUARDS=git terramate run ls -latr
-        TM_DISABLE_SAFEGUARDS=git terramate run infracost diff \
-          --path=./ \
+        TM_DISABLE_SAFEGUARDS=git terramate run infracost breakdown \
+          --path ./out.tfplan \
           --format=json \
-          --compare-to=infracost-base.json \
-          --out-file=infracost.json
+          --usage-file infracost-usage-medium.yml \
+          --out-file=./infracost-base.json
     
     - name: Post Infracost comment
       run: |
-        tTM_DISABLE_SAFEGUARDS=git erramate run infracost comment github \
-          --path=./infracost.json \
+        TM_DISABLE_SAFEGUARDS=git terramate run infracost comment github \
+          --path=./infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \
           --pull-request=${{github.event.pull_request.number}} \

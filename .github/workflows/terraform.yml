@@ -53,7 +53,7 @@ jobs:
 
     - name: Generate Infracost diff
       run: |
-        terramate run infracost diff \
+        TM_DISABLE_SAFEGUARDS=git terramate run infracost diff \
           --path=. \
           --format=json \
           --compare-to=./infracost-base.json \
@@ -61,7 +61,7 @@ jobs:
     
     - name: Post Infracost comment
       run: |
-        terramate run infracost comment github \
+        tTM_DISABLE_SAFEGUARDS=git erramate run infracost comment github \
           --path=./infracost.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \

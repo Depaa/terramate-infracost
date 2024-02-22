@@ -41,7 +41,7 @@ jobs:
           --path=./ \
           --format=json \
           --out-file=./infracost-base.json
-        terramate run cat ./infracost-base.json
+        terramate run cat infracost-base.json
         
     - name: Checkout PR branch
       uses: actions/checkout@v4
@@ -54,10 +54,11 @@ jobs:
 
     - name: Generate Infracost diff
       run: |
+        TM_DISABLE_SAFEGUARDS=git terramate run cat infracost-base.json
         TM_DISABLE_SAFEGUARDS=git terramate run infracost diff \
           --path=./ \
           --format=json \
-          --compare-to=./infracost-base.json \
+          --compare-to=infracost-base.json \
           --out-file=infracost.json
     
     - name: Post Infracost comment

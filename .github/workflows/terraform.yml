@@ -31,9 +31,9 @@ jobs:
         
     - name: Create Terraform plan on changed stacks
       run: |
-        terramate run -- terraform init
-        terramate run -- terraform validate
-        terramate run --eval -- terraform plan -out ./out.tfplan
+        terramate run terraform init
+        terramate run terraform validate
+        terramate run terraform plan -out ./out.tfplan
 
 
     - name: Setup Infracost
@@ -44,7 +44,7 @@ jobs:
     # Generate Infracost JSON file as the baseline.
     - name: Generate Infracost cost estimate baseline
       run: |
-        terramate run --eval -- infracost breakdown \
+        terramate run infracost breakdown \
           --path ./out.tfplan \
           --format=json \
           --usage-file infracost-usage-medium.yml \
@@ -52,7 +52,7 @@ jobs:
     
     - name: Post Infracost comment
       run: |
-        terramate run --eval -- infracost comment github \
+        terramate run infracost comment github \
           --path=./infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \

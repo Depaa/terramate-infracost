@@ -1,8 +1,6 @@
-name: Preview Terraform Plan
+name: Terramate with Infracost
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
 
 jobs:

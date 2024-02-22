@@ -54,6 +54,7 @@ jobs:
 
     - name: Generate Infracost diff
       run: |
+        TM_DISABLE_SAFEGUARDS=git terramate run ls -latr
         TM_DISABLE_SAFEGUARDS=git terramate run cat infracost-base.json
         TM_DISABLE_SAFEGUARDS=git terramate run infracost diff \
           --path=./ \

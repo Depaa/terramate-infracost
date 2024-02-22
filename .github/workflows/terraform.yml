@@ -1,8 +1,8 @@
 name: Preview Terraform Plan
 
 on:
-  # push:
-  #   branches: [ "main" ]
+  push:
+    branches: [ "main" ]
   pull_request:
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
       run: |
         terramate run -- terraform init
         terramate run -- terraform validate
-        terramate run --eval -- terraform plan -out $(pwd)'${terramate.stack.path.absolute}'/out.tfplan
+        terramate run --eval -- terraform plan -out ./out.tfplan
 
 
     - name: Setup Infracost
@@ -45,15 +45,15 @@ jobs:
     - name: Generate Infracost cost estimate baseline
       run: |
         terramate run --eval -- infracost breakdown \
-          --path $(pwd)'${terramate.stack.path.absolute}'/out.tfplan \
+          --path ./out.tfplan \
           --format=json \
           --usage-file infracost-usage-medium.yml \
-          --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
+          --out-file=./infracost-base.json
     
     - name: Post Infracost comment
       run: |
         terramate run --eval -- infracost comment github \
-          --path=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json \
+          --path=./infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \
           --pull-request=${{github.event.pull_request.number}} \

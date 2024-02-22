@@ -40,7 +40,7 @@ jobs:
         terramate run infracost breakdown \
           --path=./ \
           --format=json \
-          --out-file=./infracost-base.json
+          --out-file=infracost-base.json
         terramate run cat infracost-base.json
         
     - name: Checkout PR branch

@@ -36,16 +36,13 @@ jobs:
         
     - name: Create Terraform plan on changed stacks
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run terraform init
-        TM_DISABLE_SAFEGUARDS=git terramate run terraform validate
-        TM_DISABLE_SAFEGUARDS=git terramate run terraform plan -out ./out.tfplan
-        TM_DISABLE_SAFEGUARDS=git terramate run ls -latr
+        terramate run terraform init
+        terramate run terraform validate
+        terramate run terraform plan -out ./out.tfplan
 
-    # Generate Infracost JSON file as the baseline.
     - name: Generate Infracost cost estimate baseline
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run ls -latr
-        TM_DISABLE_SAFEGUARDS=git terramate run infracost breakdown \
+        terramate run infracost breakdown \
           --path ./out.tfplan \
           --format=json \
           --usage-file infracost-usage-medium.yml \
@@ -53,7 +50,7 @@ jobs:
     
     - name: Post Infracost comment
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run infracost comment github \
+        terramate run infracost comment github \
           --path=./infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \

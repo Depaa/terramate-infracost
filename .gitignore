@@ -5,3 +5,6 @@ terraform.tfstate
 .infracost
 plan.json
 tfplan.binary
+
+out.tfplan
+infracost-base.json

@@ -31,9 +31,9 @@ jobs:
         
     - name: Create Terraform plan on changed stacks
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run -- terraform init
-        TM_DISABLE_SAFEGUARDS=git terramate run -- terraform validate
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- terraform plan -out $(pwd)'${terramate.stack.path.absolute}'/plan.json
+        terramate run -- terraform init
+        terramate run -- terraform validate
+        terramate run --eval -- terraform plan -out $(pwd)'${terramate.stack.path.absolute}'/out.tfplan
 
 
     - name: Setup Infracost
@@ -44,16 +44,15 @@ jobs:
     # Generate Infracost JSON file as the baseline.
     - name: Generate Infracost cost estimate baseline
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost breakdown \
-          --path $(pwd)'${terramate.stack.path.absolute}'/plan.json \
+        terramate run --eval -- infracost breakdown \
+          --path $(pwd)'${terramate.stack.path.absolute}'/out.tfplan \
           --format=json \
           --usage-file infracost-usage-medium.yml \
           --out-file=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- cat $(pwd)'${terramate.stack.path.absolute}'/infracost-base.json
     
     - name: Post Infracost comment
       run: |
-        TM_DISABLE_SAFEGUARDS=git terramate run --eval -- infracost comment github \
+        terramate run --eval -- infracost comment github \
           --path=$(pwd)'${terramate.stack.path.absolute}'/infracost-base.json \
           --repo=$GITHUB_REPOSITORY \
           --github-token=${{github.token}} \

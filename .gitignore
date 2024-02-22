@@ -8,3 +8,4 @@ tfplan.binary
 
 out.tfplan
 infracost-base.json
+infracost.json

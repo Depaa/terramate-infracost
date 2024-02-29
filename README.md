@@ -35,7 +35,5 @@ This repository contains an example of how to integrate Infracost with Terramate
 Run the following commands to execute Infracost in all Terramate stacks:
 
 ```sh
-infracost generate config
-
 infracost breakdown --path . --usage-file infracost-usage-medium.yml
 ```
